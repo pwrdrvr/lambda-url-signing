@@ -1,0 +1,21 @@
+.idea/
+node_modules
+cdk.out/
+dist/
+*.tsbuildinfo
+*.log
+*.zip
+.nyc_output/
+coverage/
+.DS_Store
+dist-lib/
+
+# https://unix.stackexchange.com/questions/537174/gnu-tar-not-ignoring-directories-in-gitignore-with-exclude-vcs-ignores
+# needed for tar --exclude-vcs-ignores
+downloads
+coverage
+dist
+.idea
+cdk.out
+.nyc_output
+*.tgz

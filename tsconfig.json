@@ -1,0 +1,21 @@
+{
+  // Blank out files so we don't double-build everything.
+  // Note that if this isn't blanked out it will cause failures on the second
+  // compile for settings that are not set in this file, such as
+  // importint a `.json` file will say `but '--resolveJsonModule' is not used`
+  // even though resolveJsonModule is set to true in tsconfig.packages.json
+  // https://www.typescriptlang.org/docs/handbook/project-references.html#overall-structure
+  "files": [],
+  // Top-level "solution" config file that just references all the projects
+  // to be build by `tsc --build`.  Note that `--build` is required for
+  // configs with references.
+  // https://www.typescriptlang.org/docs/handbook/project-references.html#overall-structure
+  "references": [
+    {
+      "path": "./packages/lambda/"
+    },
+    {
+      "path": "./packages/cdk/"
+    }
+  ]
+}

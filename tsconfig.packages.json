@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "strict": true,
+    "allowJs": false,
+
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    "composite": true,
+    "target": "es2018",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
+  },
+  "exclude": ["**/cdk.out", "**/dist", "**/node_modules"]
+}
