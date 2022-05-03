@@ -51,6 +51,10 @@ async function sendSignedRequest(url: URL) {
     path: url.pathname,
     port: 443,
     protocol: 'https:',
+    query: {},
+  });
+  url.searchParams.forEach((value, key) => {
+    request.query[key] = value;
   });
 
   const presignedRequest = (await presigner.presign(request)) as HttpRequest;
