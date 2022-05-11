@@ -16,7 +16,7 @@ const credentialsProvider = defaultProvider();
  * Sign/presign and send the requests
  * @param url
  */
-async function sendSignedRequest(url: URL) {
+async function sendSignedRequest(url: URL, service: string) {
   const hostname = url.hostname;
 
   // Parse the region out of the Lambda URL
@@ -26,7 +26,7 @@ async function sendSignedRequest(url: URL) {
   const signer = new SignatureV4({
     credentials,
     region,
-    service: 'lambda',
+    service,
     sha256: Sha256,
   });
   // This issue claims that the session token being present during presign causes a problem
@@ -37,12 +37,11 @@ async function sendSignedRequest(url: URL) {
     // credentials: { ...credentials, sessionToken: undefined },
     credentials,
     region,
-    service: 'lambda',
+    service,
     sha256: Sha256,
   });
 
   const request = new HttpRequest({
-    // Dev - ARM64
     hostname,
     headers: {
       host: hostname,
@@ -51,10 +50,11 @@ async function sendSignedRequest(url: URL) {
     path: url.pathname,
     port: 443,
     protocol: 'https:',
-    query: {},
+    // query: {},
   });
   url.searchParams.forEach((value, key) => {
     request.query[key] = value;
+    log.info({ key, value }, 'query');
   });
 
   const presignedRequest = (await presigner.presign(request)) as HttpRequest;
@@ -104,10 +104,14 @@ program
   .name('lambda-sign-url')
   .description('Sign and invoke a Lambda URL using AWS Signature Version 4')
   .version('1.0.0')
-  .argument('<url>', 'Lambda URL to sign and invoke')
-  .action(async (arg) => {
-    const url = new URL(arg);
-    await sendSignedRequest(url);
-  });
+  .option('-s, --service [service]', 'The AWS service to use (default: lambda)', 'lambda')
+  .argument('<url>', 'Lambda URL to sign and invoke');
 
 program.parse();
+
+async function main() {
+  const url = new URL(program.processedArgs[0]);
+  await sendSignedRequest(url, program.opts().service);
+}
+
+void main();
