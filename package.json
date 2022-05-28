@@ -11,6 +11,9 @@
     "lint": "eslint ./ --ext .ts --ext .tsx",
     "lint-and-fix": "eslint ./ --ext .ts --ext .tsx --fix"
   },
+  "bin": {
+    "lambda-sign-url": "./packages/cli/src/index.ts"
+  },
   "files": [],
   "repository": {
     "type": "git",
