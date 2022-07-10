@@ -6,6 +6,11 @@ The signing demonstration takes care of some tricky edge cases such as escaping 
 
 This pattern also works to sign requests to API Gateway origins, a demonstration of which can be seen in [pwrdrvr/microapps-core](https://www.github.com/pwrdrvr/microapps-core).
 
+## Example Deployment
+
+- [CloudFront Distribution Endpoint - Works](https://d9ss6skvnf62k.cloudfront.net/)
+- [Lambda Function URL Endpoint - Forbidden](https://gijgl6n6777vmn4twt5snlpmim0wyolq.lambda-url.us-east-2.on.aws/)
+
 ## AWS Libraries Used for Signing
 
 - @aws-sdk/credential-provider-node
