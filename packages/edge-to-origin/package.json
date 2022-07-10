@@ -9,6 +9,7 @@
     "@types/aws-lambda": "^8.10.77",
     "@types/convict": "^6.0.2",
     "@types/convict-format-with-validator": "^6.0.2",
+    "@types/fs-extra": "^9.0.13",
     "@types/lambda-log": "^2.2.0",
     "@types/node": "^16.9.2",
     "aws-sdk-client-mock": "^0.6.2"
