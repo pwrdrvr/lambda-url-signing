@@ -1,0 +1,42 @@
+name: Cleanup Merged PR
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+  workflow_dispatch:
+
+# Limit concurrency to 1, with queueing, per workflow
+# Limit concurrency to 1, with queueing, per workflow per PR
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+env:
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  NODE_ENV: prod
+  AWS_REGION: us-east-2
+
+jobs:
+  cleanup-pr:
+    environment:
+      name: ghpublic
+    name: cleanup
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-session-name: microapps-ghpublic-build
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/builder-writeRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Destroy CDK Stack
+        run: |
+          aws cloudformation delete-stack --stack-name "lambda-signing-url-ghpublic-${NODE_ENV}-pr-${PR_NUMBER}"
+          aws cloudformation wait stack-delete-complete --no-paginate --output text --stack-name "lambda-signing-url-ghpublic-${NODE_ENV}-pr-${PR_NUMBER}"

@@ -1,7 +1,9 @@
 import { Construct } from 'constructs';
-import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { TimeToLive } from '@cloudcomponents/cdk-temp-stack';
 import { ServiceConstruct, IService } from './service-construct';
+import { DistributionConstruct } from './distribution';
+import { EdgeToOriginConstruct } from './edge-to-origin';
 
 interface AppProps extends StackProps {
   readonly local: {
@@ -22,6 +24,16 @@ export class AppStack extends Stack implements IAppStack {
     return this._service;
   }
 
+  private _distribution: DistributionConstruct;
+  public get distribution(): DistributionConstruct {
+    return this._distribution;
+  }
+
+  private _edgeToOrigin: EdgeToOriginConstruct;
+  public get edgeToOrigin(): EdgeToOriginConstruct {
+    return this._edgeToOrigin;
+  }
+
   constructor(scope: Construct, id: string, props: AppProps) {
     super(scope, id, props);
 
@@ -36,12 +48,33 @@ export class AppStack extends Stack implements IAppStack {
     }
 
     //
-    // Create a lambda
+    // Create an origin lambda
     //
     this._service = new ServiceConstruct(this, 'service', {
       memorySize: 512,
       autoDeleteEverything: ttl !== undefined,
       isTestBuild: process.env.TEST_BUILD ? true : false,
+    });
+
+    //
+    // Create an edge signing function
+    //
+    this._edgeToOrigin = new EdgeToOriginConstruct(this, 'edge-to-origin', {
+      signingMode: 'sign',
+      lambdaOriginFuncUrl: this._service.serviceFuncUrl,
+      originRegion: props.env?.region,
+      addXForwardedHostHeader: true,
+      replaceHostHeader: true,
+      removalPolicy: ttl ? RemovalPolicy.DESTROY : undefined,
+    });
+
+    //
+    // Create a distribution
+    //
+    this._distribution = new DistributionConstruct(this, 'distribution', {
+      domainNameOrigin: this._service.serviceUrl,
+      removalPolicy: ttl ? RemovalPolicy.DESTROY : undefined,
+      edgeToOriginLambdas: this._edgeToOrigin.edgeToOriginLambdas,
     });
 
     new CfnOutput(this, 'service-url', {

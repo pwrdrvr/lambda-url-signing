@@ -2,6 +2,7 @@
 node_modules
 cdk.out/
 dist/
+distb/
 *.tsbuildinfo
 *.log
 *.zip
