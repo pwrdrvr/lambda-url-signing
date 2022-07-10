@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "build": "tsc --build tsconfig.json",
+    "build:rollup:edge-to-origin": "rollup --config rollup.edge-to-origin.config.js",
     "build:cdk": "tsc --build ./packages/cdk/tsconfig.json",
     "clean": "tsc --build tsconfig.json --clean",
     "lint": "eslint ./ --ext .ts --ext .tsx",
@@ -24,6 +25,9 @@
     "./packages/*/"
   ],
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
     "@types/jest": "^27.0.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
@@ -34,6 +38,10 @@
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27.0.0",
     "prettier": "^2.5.1",
+    "rollup": "^2.39.0",
+    "rollup-plugin-node-externals": "^2.2.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
     "ts-jest": "^27.0.0",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.0"

@@ -186,13 +186,22 @@ replaceHostHeader: ${props.replaceHostHeader}`;
         handler: 'index.handler',
         ...edgeToOriginFuncProps,
       });
-    } else if (existsSync(path.join(__dirname, 'edge-to-origin', 'index.js'))) {
+    } else if (
+      existsSync(path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin', 'index.js'))
+    ) {
       // Emit the config file from the construct options
-      writeFileSync(path.join(__dirname, 'edge-to-origin', 'config.yml'), edgeToOriginConfigYaml);
+      writeFileSync(
+        path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin', 'config.yml'),
+        edgeToOriginConfigYaml,
+      );
 
-      // This is for built apps packaged with the CDK construct
+      // This is for bundling the version build with `rollup` for the
+      // US-East-1 Lambda @ Edge function
+      // We can't use
       this._edgeToOriginFunction = new cf.experimental.EdgeFunction(this, 'edge-to-apigwy-func', {
-        code: lambda.Code.fromAsset(path.join(__dirname, 'edge-to-origin')),
+        code: lambda.Code.fromAsset(
+          path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin'),
+        ),
         handler: 'index.handler',
         ...edgeToOriginFuncProps,
       });
