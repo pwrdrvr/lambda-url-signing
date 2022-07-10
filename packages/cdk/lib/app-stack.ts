@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { Aws, CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { Aws, CfnOutput, Duration, Fn, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { TimeToLive } from '@cloudcomponents/cdk-temp-stack';
 import { ServiceConstruct, IService } from './service-construct';
 import { DistributionConstruct } from './distribution';
@@ -71,7 +71,7 @@ export class AppStack extends Stack implements IAppStack {
     // Create a distribution
     //
     this._distribution = new DistributionConstruct(this, 'distribution', {
-      domainNameOrigin: this._service.serviceFuncUrl,
+      domainNameOrigin: this._service.serviceUrl,
       removalPolicy: ttl ? RemovalPolicy.DESTROY : undefined,
       edgeToOriginLambdas: this._edgeToOrigin.edgeToOriginLambdas,
     });

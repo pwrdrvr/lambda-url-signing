@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { Duration, RemovalPolicy, Tags } from 'aws-cdk-lib';
+import { Duration, Fn, RemovalPolicy, Tags } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -34,8 +34,20 @@ interface ServiceProps {
 }
 
 export interface IService {
+  /**
+   * The Lambda function that is used to serve the API.
+   */
   readonly serviceFunc: lambda.IFunction;
+
+  /**
+   * Service Lamdba Function URL
+   */
   readonly serviceFuncUrl: lambda.IFunctionUrl;
+
+  /**
+   * Service URL for use as CloudFront origin
+   */
+  readonly serviceUrl: string;
 }
 
 export class ServiceConstruct extends Construct implements IService {
@@ -47,6 +59,10 @@ export class ServiceConstruct extends Construct implements IService {
   private _serviceFuncUrl: lambda.FunctionUrl;
   public get serviceFuncUrl(): lambda.IFunctionUrl {
     return this._serviceFuncUrl;
+  }
+
+  public get serviceUrl(): string {
+    return Fn.select(2, Fn.split('/', this._serviceFuncUrl.url));
   }
 
   /**
