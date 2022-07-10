@@ -38,5 +38,5 @@ jobs:
 
       - name: Destroy CDK Stack
         run: |
-          aws cloudformation delete-stack --stack-name "lambda-signing-url-ghpublic-${NODE_ENV}-pr-${PR_NUMBER}"
-          aws cloudformation wait stack-delete-complete --no-paginate --output text --stack-name "lambda-signing-url-ghpublic-${NODE_ENV}-pr-${PR_NUMBER}"
+          aws cloudformation delete-stack --stack-name "lambda-url-signing-pr-${PR_NUMBER}"
+          aws cloudformation wait stack-delete-complete --no-paginate --output text --stack-name "lambda-url-signing-pr-${PR_NUMBER}"
