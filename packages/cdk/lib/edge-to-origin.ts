@@ -155,7 +155,7 @@ replaceHostHeader: ${props.replaceHostHeader}`;
     };
     if (
       process.env.NODE_ENV === 'test' &&
-      existsSync(path.join(__dirname, '..', '..', 'edge-to-origin', 'dist', 'index.mjs'))
+      existsSync(path.join(__dirname, '..', '..', 'edge-to-origin', 'dist', 'index.js'))
     ) {
       // Emit the config file from the construct options
       writeFileSync(
@@ -170,7 +170,7 @@ replaceHostHeader: ${props.replaceHostHeader}`;
         ...edgeToOriginFuncProps,
       });
     } else if (
-      existsSync(path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin', 'index.mjs'))
+      existsSync(path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin', 'index.js'))
     ) {
       // Emit the config file from the construct options
       writeFileSync(
