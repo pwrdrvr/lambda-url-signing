@@ -15,5 +15,5 @@ new AppStack(app, 'lambda-url-signing', {
   local: {
     ttl: Duration.days(1),
   },
-  stackName: `lambda-url-signing${process.env.PR_NUMBER ? `-${process.env.PR_NUMBER}` : ''}`,
+  stackName: `lambda-url-signing${process.env.PR_NUMBER ? `-pr-${process.env.PR_NUMBER}` : ''}`,
 });
