@@ -61,6 +61,7 @@ export class AppStack extends Stack implements IAppStack {
     //
     this._edgeToOrigin = new EdgeToOriginConstruct(this, 'edge-to-origin', {
       signingMode: 'sign',
+      lambdaOriginFuncUrl: this._service.serviceFuncUrl,
       originRegion: Aws.REGION,
       addXForwardedHostHeader: true,
       replaceHostHeader: true,

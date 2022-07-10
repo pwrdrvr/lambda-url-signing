@@ -38,6 +38,11 @@ export interface EdgeToOriginProps {
   readonly removalPolicy?: RemovalPolicy;
 
   /**
+   * Origin lambda URL
+   */
+  readonly lambdaOriginFuncUrl: lambda.IFunctionUrl;
+
+  /**
    * Adds an X-Forwarded-Host-Header when calling API Gateway
    *
    * Can only be trusted if `signingMode` is enabled, which restricts
@@ -244,6 +249,28 @@ replaceHostHeader: ${props.replaceHostHeader}`;
         ...edgeToOriginFuncProps,
       });
     }
+
+    // Allow Lambda @ Edge to invoke this function
+    // 2021-03-19 - For some reason this was recently removed from the defaults
+    // for a Lambda function and now has to be allowed explicitly
+    const edgeLambdaPolicy = new iam.PolicyStatement();
+    edgeLambdaPolicy.addActions('sts:AssumeRole');
+    edgeLambdaPolicy.addServicePrincipal('edgelambda.amazonaws.com');
+    (this._edgeToOriginFunction.role as unknown as iam.Role).assumeRolePolicy?.addStatements(
+      edgeLambdaPolicy,
+    );
+
+    // Allow the Lambda to invoke the origin function via URL
+    // props.lambdaOriginFunc.grantInvokeUrl(this._edgeFunc);
+    if (props.lambdaOriginFuncUrl) {
+      props.lambdaOriginFuncUrl.grantInvokeUrl(this._edgeToOriginFunction);
+    }
+    // if (props.httpApiRoute) {
+    //   // This generates the wrong permission: /*/*/ when it should be /*/*
+    //   props.httpApiRoute.grantInvoke(this._edgeToOriginFunction, {
+    //     httpMethods: [apigwy.HttpMethod.ANY],
+    //   });
+    // }
 
     this._edgeToOriginLambdas = [
       {
