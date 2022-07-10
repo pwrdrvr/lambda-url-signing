@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { Duration, Fn, RemovalPolicy, Tags } from 'aws-cdk-lib';
+import { Duration, Fn, PhysicalName, RemovalPolicy, Tags } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -86,7 +86,7 @@ export class ServiceConstruct extends Construct implements IService {
     //
     this._serviceFunc = new lambdaNodejs.NodejsFunction(this, 'lambda-func', {
       entry: 'packages/lambda/src/index.ts',
-      functionName: lambdaFuncServiceName,
+      functionName: lambdaFuncServiceName || PhysicalName.GENERATE_IF_NEEDED,
       logRetention: logs.RetentionDays.ONE_MONTH,
       memorySize,
       timeout: Duration.seconds(10),

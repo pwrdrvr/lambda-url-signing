@@ -3,7 +3,6 @@ import * as os from 'os';
 import * as path from 'path';
 import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import * as cf from 'aws-cdk-lib/aws-cloudfront';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -152,27 +151,6 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       logRetention: logs.RetentionDays.ONE_MONTH,
       runtime: lambda.Runtime.NODEJS_14_X,
       timeout: Duration.seconds(5),
-      initialPolicy: [
-        // This can't have a reference to the httpApi because it would mean
-        // the parent stack (this stack) has to be created before the us-east-1
-        // child stack for the Edge Lambda Function.
-        // That's why we use a tag-based policy to allow the Edge Function
-        // to invoke any API Gateway API that we apply a tag to
-        // We allow the edge function to sign for all regions since
-        // we may use custom closest region in the future.
-        new iam.PolicyStatement({
-          actions: ['execute-api:Invoke'],
-          resources: [`arn:aws:execute-api:*:${Aws.ACCOUNT_ID}:*/*/*/*`],
-          // Unfortunately, API Gateway access cannot be restricted using
-          // tags on the target resource
-          // https://docs.aws.amazon.com/IAM/latest/UserGuide/access_tags.html
-          // https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-services-that-work-with-iam.html#networking_svcs
-          // conditions: {
-          //   // TODO: Set this to a string unique to each stack
-          //   StringEquals: { 'aws:ResourceTag/microapp-managed': 'true' },
-          // },
-        }),
-      ],
       ...(removalPolicy ? { removalPolicy } : {}),
     };
     if (
@@ -253,15 +231,14 @@ replaceHostHeader: ${props.replaceHostHeader}`;
     // Allow Lambda @ Edge to invoke this function
     // 2021-03-19 - For some reason this was recently removed from the defaults
     // for a Lambda function and now has to be allowed explicitly
-    const edgeLambdaPolicy = new iam.PolicyStatement();
-    edgeLambdaPolicy.addActions('sts:AssumeRole');
-    edgeLambdaPolicy.addServicePrincipal('edgelambda.amazonaws.com');
-    (this._edgeToOriginFunction.role as unknown as iam.Role).assumeRolePolicy?.addStatements(
-      edgeLambdaPolicy,
-    );
+    // const edgeLambdaPolicy = new iam.PolicyStatement();
+    // edgeLambdaPolicy.addActions('sts:AssumeRole');
+    // edgeLambdaPolicy.addServicePrincipal('edgelambda.amazonaws.com');
+    // (this._edgeToOriginFunction.role as unknown as iam.Role).assumeRolePolicy?.addStatements(
+    //   edgeLambdaPolicy,
+    // );
 
     // Allow the Lambda to invoke the origin function via URL
-    // props.lambdaOriginFunc.grantInvokeUrl(this._edgeFunc);
     if (props.lambdaOriginFuncUrl) {
       props.lambdaOriginFuncUrl.grantInvokeUrl(this._edgeToOriginFunction);
     }
