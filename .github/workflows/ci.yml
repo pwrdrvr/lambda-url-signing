@@ -93,7 +93,9 @@ jobs:
         run: npm ci
 
       - name: Build All TypeScript
-        run: npm run build
+        run: |
+          npm run build
+          npm run build:rollup:edge-to-origin
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
