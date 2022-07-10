@@ -11,7 +11,7 @@ const NPM_EXTERNALS = [];
 const generateConfig = (input) => ({
   input: `./packages/edge-to-origin/src/${input.filename}.ts`,
   output: {
-    file: `./distb/edge-to-origin/${input.filename}${input.minify ? '' : '.max'}.js`,
+    file: `./distb/edge-to-origin/${input.filename}${input.minify ? '' : '.max'}.mjs`,
     format: 'es',
   },
   plugins: [
