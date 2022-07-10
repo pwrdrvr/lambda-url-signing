@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { Aws, CfnOutput, Duration, Fn, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { TimeToLive } from '@cloudcomponents/cdk-temp-stack';
 import { ServiceConstruct, IService } from './service-construct';
 import { DistributionConstruct } from './distribution';
