@@ -7,6 +7,7 @@ const app = new App();
 
 const env: Environment = {
   region: process.env.CDK_DEFAULT_REGION,
+  account: process.env.CDK_DEFAULT_ACCOUNT,
 };
 
 new AppStack(app, 'lambda-url-signing', {
