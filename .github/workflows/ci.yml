@@ -47,7 +47,7 @@ jobs:
         with:
           node-version: 16
           cache: 'npm'
-          cache-dependency-path: '**/packjage-lock.json'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install Node Modules
         run: npm ci
