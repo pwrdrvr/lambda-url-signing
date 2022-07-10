@@ -1,5 +1,5 @@
 {
-  "name": "@huntharo/edge-to-origin",
+  "name": "@pwrdrvr/lambda-url-signing-edge-to-origin",
   "description": "Edge function for signing requests to Origin (API Gateway or Lambda Functino URL)",
   "version": "1.0.0",
   "private": true,

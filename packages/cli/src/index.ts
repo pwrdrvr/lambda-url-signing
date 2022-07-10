@@ -12,7 +12,7 @@ const log = console;
 const program = new Command();
 
 program
-  .name('lambda-sign-url')
+  .name('aws-sign-url')
   .description(
     'Sign and invoke a Lambda Function URL or API Gateway Execute-API URL using AWS Signature Version 4',
   )

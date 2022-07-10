@@ -1,5 +1,5 @@
 {
-  "name": "lambda-docker-typescript-esm",
+  "name": "@pwrdrvr/lambda-url-signing-workspace",
   "version": "1.0.0",
   "description": "Demo of signing Lambda URL requests with SignatureV4",
   "license": "MIT",
@@ -9,28 +9,32 @@
     "build:cdk": "tsc --build ./packages/cdk/tsconfig.json",
     "clean": "tsc --build tsconfig.json --clean",
     "lint": "eslint ./ --ext .ts --ext .tsx",
-    "lint-and-fix": "eslint ./ --ext .ts --ext .tsx --fix"
+    "lint-and-fix": "eslint ./ --ext .ts --ext .tsx --fix",
+    "test": "AWS_PROFILE= AWS_EMF_ENVIRONMENT=Local jest"
   },
   "bin": {
-    "lambda-sign-url": "./packages/cli/src/index.ts"
+    "aws-sign-url": "./packages/cli/src/index.ts"
   },
   "files": [],
   "repository": {
     "type": "git",
-    "url": "https://github.com/huntharo/lambda-url-signing.git"
+    "url": "https://github.com/pwrdrvr/lambda-url-signing.git"
   },
   "workspaces": [
     "./packages/*/"
   ],
   "devDependencies": {
+    "@types/jest": "^27.0.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
-    "aws-cdk": "^2.21.1",
+    "aws-cdk": "^2.31.1",
     "esbuild": "^0.14.38",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^27.0.0",
     "prettier": "^2.5.1",
+    "ts-jest": "^27.0.0",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.0"
   }

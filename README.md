@@ -23,7 +23,7 @@ npx cdk deploy
 # Copy the exported Lambda URL at the end of the deployment output
 # Run the tool to send both the signed (headers) and presigned (query string) requests
 # The URL will look like: https://[big-random-ish-string].lambda-url.[region].on.aws/
-npx lambda-sign-url --service lambda|execute-api|[other] https://[your-url-value]/some/url
+npx aws-sign-url --service lambda|execute-api|[other] https://[your-url-value]/some/url
 ```
 
 ## CDK Deploy

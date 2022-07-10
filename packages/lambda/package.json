@@ -1,12 +1,12 @@
 {
-  "name": "@huntharo/lambda-url-singing-func",
+  "name": "@pwrdrvr/lambda-url-singing-func",
   "description": "Lambda function that requires a signature on the URL",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
   "type": "module",
   "repository": {
-    "url": "https://github.com/huntharo/lambda-url-signing.git"
+    "url": "https://github.com/pwrdrvr/lambda-url-signing.git"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.77",

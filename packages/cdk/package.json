@@ -1,5 +1,5 @@
 {
-  "name": "@huntharo/lambda-url-signing-cdk",
+  "name": "@pwrdrvr/lambda-url-signing-cdk",
   "version": "0.1.0",
   "scripts": {
     "build": "tsc",

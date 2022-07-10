@@ -1,0 +1,127 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+# Workflow syntax reference:
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+name: Build / Deploy - CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  # This is used by the SharedProps to detect a PR build
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+  # Set env to prod so we don't get an env suffix on the DNS names
+  NODE_ENV: ${{ secrets.NODE_ENV }}
+  AWS_REGION: us-east-2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      prSuffix: ${{ steps.prSuffix.outputs.prSuffix }}
+      prSuffixPackageVersion: ${{ steps.prSuffix.outputs.prSuffixPackageVersion }}
+      releaseAppPackageVersion: ${{ steps.appVersions.outputs.releaseAppPackageVersion }}
+      nextjsDemoAppPackageVersion: ${{ steps.appVersions.outputs.nextjsDemoAppPackageVersion }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Compute PR Suffix
+        id: prSuffix
+        run: |
+          if [ -n "${PR_NUMBER}" ]; then
+            echo "::set-output name=prSuffix::-pr-${PR_NUMBER}"
+            echo "::set-output name=prSuffixPackageVersion::-pr.${PR_NUMBER}"
+            echo "PR_SUFFIX=-pr-"${PR_NUMBER} >> $GITHUB_ENV
+          else
+            echo "::set-output name=prSuffix::"
+            echo "::set-output name=prSuffixPackageVersion::"
+            echo "PR_SUFFIX=" >> $GITHUB_ENV
+          fi
+
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: '**/packjage-lock.json'
+
+      - name: Install Node Modules
+        run: npm ci
+
+      - name: Build All TypeScript
+        run: npm run build
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Run Node Tests
+        env:
+          NODE_ENV: test
+        run: npm run test
+
+  deploy:
+    name: deploy
+    concurrency:
+      group: deploy-${{ github.workflow }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    needs:
+      - build
+    environment:
+      name: ghpublic
+      url: https://${{ steps.getCDKExports.outputs.edgeDomain }}${{ steps.getCDKExports.outputs.prefix }}/${{ env.RELEASE_APP_NAME }}/
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'yarn'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Install Node Modules
+        run: npm ci
+
+      - name: Build All TypeScript
+        run: npm run build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-session-name: microapps-ghpublic-build
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/builder-writeRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set Hotswap Flag
+        run: |
+          if [ -n "${PR_NUMBER}" ]; then
+            echo "HOTSWAP_FLAG=--hotswap" >> $GITHUB_ENV
+          else
+            echo "HOTSWAP_FLAG=" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy CDK Stack
+        run: npx cdk deploy ${HOTSWAP_FLAG} --require-approval never lambda-url-signing
+
+      - name: Get CDK Exports
+        id: getCDKExports
+        run: |
+          echo "::set-output name=edgeDomain::"$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing-ghpublic-${NODE_ENV}${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text)
+          echo "EDGE_DOMAIN="$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing-ghpublic-${NODE_ENV}${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text) >> $GITHUB_ENV
+
+      # - name: Test Demo App
+      #   run: |
+      #     echo Testing App Frame Loading
+      #     curl --fail https://${EDGE_DOMAIN}/${DEMO_APP_NAME}/
+      #     echo Testing App HTML Loading
+      #     curl --fail https://${EDGE_DOMAIN}/${DEMO_APP_NAME}/${PACKAGE_VERSION}/index.html
+      #     echo Testing App Method Invocation
+      #     curl --fail https://${EDGE_DOMAIN}/${DEMO_APP_NAME}/${PACKAGE_VERSION}/someMethod
