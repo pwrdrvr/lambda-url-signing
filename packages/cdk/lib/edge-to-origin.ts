@@ -181,7 +181,7 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       );
       // This is for tests run under jest
       // This is also for anytime when the edge function has already been bundled
-      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(this, 'edge-to-apigwy-func', {
+      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(this, 'edge-to-origin-func', {
         code: lambda.Code.fromAsset(path.join(__dirname, '..', '..', 'edge-to-origin', 'dist')),
         handler: 'index.handler',
         ...edgeToOriginFuncProps,
@@ -198,7 +198,7 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       // This is for bundling the version build with `rollup` for the
       // US-East-1 Lambda @ Edge function
       // We can't use
-      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(this, 'edge-to-apigwy-func', {
+      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(this, 'edge-to-origin-func', {
         code: lambda.Code.fromAsset(
           path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin'),
         ),
@@ -217,7 +217,7 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       // if the edge-to-origin function is not already bundled.
       // This will fail to deploy in any region other than us-east-1
       // We cannot use NodejsFunction because it will not create in us-east-1
-      this._edgeToOriginFunction = new lambdaNodejs.NodejsFunction(this, 'edge-to-apigwy-func', {
+      this._edgeToOriginFunction = new lambdaNodejs.NodejsFunction(this, 'edge-to-origin-func', {
         entry: path.join(__dirname, '..', '..', 'edge-to-origin', 'src', 'index.ts'),
         handler: 'handler',
         bundling: {
