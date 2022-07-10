@@ -1,14 +1,18 @@
 # Overview
 
-Demonstrates how to sign an AWS Lambda URL request using Signature V4 and AWS-provided JavaScript / TypeScript / Node libraries:
+Demonstrates how to sign an AWS Lambda Function URL request using Signature V4 and AWS-provided JavaScript / TypeScript / Node libraries, listed below, as well as a GitHub Actions-deloyed complete CDK stack that creates a CloudFront Distribution with a CloudFront Lambda @ Edge function that signs requests to the Lambda Function URL origin, passing through the Host header of the target function so the requests are not blocked, and deployable to any region using an EdgeFunction that will deploy to US-East-1.
+
+The signing demonstration takes care of some tricky edge cases such as escaping `[]` characters in query strings, which are accepted by CloudFront, but rejected by Function URLs with a less than helpful error message.
+
+This pattern also works to sign requests to API Gateway origins, a demonstration of which can be seen in [pwrdrvr/microapps-core](https://www.github.com/pwrdrvr/microapps-core).
+
+## AWS Libraries Used for Signing
 
 - @aws-sdk/credential-provider-node
 - @aws-sdk/signature-v4
 - @aws-crypto/sha256-browser
 - @aws-sdk/protocol-http
 - @aws-sdk/node-http-handler
-
-This signing method can also be used within a CloudFront @ Edge OriginRequest handler to sign requests to the origin then add the headers back into the request and allow CloudFront to forward it to the origin with auth.
 
 # Usage
 
