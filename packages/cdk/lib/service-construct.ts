@@ -17,9 +17,9 @@ interface ServiceProps {
 
   /**
    * Automatically clean up durable resources (e.g. for PR builds).
-   * @default false
+   * @default default of each resource
    */
-  readonly autoDeleteEverything?: boolean;
+  readonly removalPolicy?: RemovalPolicy;
 
   /**
    * The amount of memory, in MB, that is allocated to your Lambda function.
@@ -59,10 +59,10 @@ export class ServiceConstruct extends Construct implements IService {
     super(scope, id);
 
     const {
-      autoDeleteEverything,
       lambdaFuncServiceName,
-      memorySize = 512, // 1769 MB is 1 vCPU seconds of credits per second
       isTestBuild = false,
+      memorySize = 512, // 1769 MB is 1 vCPU seconds of credits per second
+      removalPolicy,
     } = props;
 
     //
@@ -92,8 +92,8 @@ export class ServiceConstruct extends Construct implements IService {
     if (lambdaFuncServiceName !== undefined) {
       Tags.of(this._serviceFunc).add('Name', lambdaFuncServiceName);
     }
-    if (autoDeleteEverything) {
-      this._serviceFunc.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    if (removalPolicy) {
+      this._serviceFunc.applyRemovalPolicy(removalPolicy);
     }
 
     this._serviceFuncUrl = this._serviceFunc.addFunctionUrl({

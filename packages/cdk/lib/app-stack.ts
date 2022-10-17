@@ -1,14 +1,10 @@
 import { Construct } from 'constructs';
-import { CfnOutput, Duration, Stack, StackProps } from 'aws-cdk-lib';
-import { TimeToLive } from '@cloudcomponents/cdk-temp-stack';
+import { CfnOutput, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { ServiceConstruct, IService } from './service-construct';
 
 interface AppProps extends StackProps {
   readonly local: {
-    /**
-     * Time after which to automatically delete all resources.
-     */
-    readonly ttl?: Duration;
+    readonly removalPolicy: RemovalPolicy;
   };
 }
 
@@ -25,22 +21,12 @@ export class AppStack extends Stack implements IAppStack {
   constructor(scope: Construct, id: string, props: AppProps) {
     super(scope, id, props);
 
-    const { local } = props;
-    const { ttl } = local;
-
-    // Set stack to delete if this is a PR build
-    if (ttl !== undefined) {
-      new TimeToLive(this, 'TimeToLive', {
-        ttl,
-      });
-    }
-
     //
     // Create a lambda
     //
     this._service = new ServiceConstruct(this, 'service', {
       memorySize: 512,
-      autoDeleteEverything: ttl !== undefined,
+      removalPolicy: props.local.removalPolicy,
       isTestBuild: process.env.TEST_BUILD ? true : false,
     });
 
