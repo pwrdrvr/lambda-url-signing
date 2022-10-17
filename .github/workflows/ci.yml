@@ -27,7 +27,7 @@ jobs:
       releaseAppPackageVersion: ${{ steps.appVersions.outputs.releaseAppPackageVersion }}
       nextjsDemoAppPackageVersion: ${{ steps.appVersions.outputs.nextjsDemoAppPackageVersion }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Compute PR Suffix
         id: prSuffix
@@ -43,7 +43,7 @@ jobs:
           fi
 
       - name: Use Node.js 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'npm'
@@ -80,10 +80,10 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Use Node.js 16
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'yarn'

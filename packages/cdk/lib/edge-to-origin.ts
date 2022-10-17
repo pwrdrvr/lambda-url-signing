@@ -1,7 +1,8 @@
+import * as crypto from 'crypto';
 import { existsSync, writeFileSync } from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import * as cf from 'aws-cdk-lib/aws-cloudfront';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
@@ -164,11 +165,17 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       );
       // This is for tests run under jest
       // This is also for anytime when the edge function has already been bundled
-      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(this, 'edge-to-origin-func', {
-        code: lambda.Code.fromAsset(path.join(__dirname, '..', '..', 'edge-to-origin', 'dist')),
-        handler: 'index.handler',
-        ...edgeToOriginFuncProps,
-      });
+      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(
+        this,
+        `lambda-url-sign-edge-${this.hashStackName()}`,
+        {
+          stackId: `lambda-url-signing-${this.hashStackName()}`,
+          functionName: `lambda-url-signing-${this.hashStackName()}`,
+          code: lambda.Code.fromAsset(path.join(__dirname, '..', '..', 'edge-to-origin', 'dist')),
+          handler: 'index.handler',
+          ...edgeToOriginFuncProps,
+        },
+      );
     } else if (
       existsSync(path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin', 'index.js'))
     ) {
@@ -181,13 +188,18 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       // This is for bundling the version build with `rollup` for the
       // US-East-1 Lambda @ Edge function
       // We can't use
-      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(this, 'edge-to-origin-func', {
-        code: lambda.Code.fromAsset(
-          path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin'),
-        ),
-        handler: 'index.handler',
-        ...edgeToOriginFuncProps,
-      });
+      this._edgeToOriginFunction = new cf.experimental.EdgeFunction(
+        this,
+        `lambda-url-sign-edge-${this.hashStackName()}`,
+        {
+          stackId: `lambda-url-signing-${this.hashStackName()}`,
+          code: lambda.Code.fromAsset(
+            path.join(__dirname, '..', '..', '..', 'distb', 'edge-to-origin'),
+          ),
+          handler: 'index.handler',
+          ...edgeToOriginFuncProps,
+        },
+      );
     } else {
       // Emit the config file from the construct options
       writeFileSync(
@@ -256,5 +268,15 @@ replaceHostHeader: ${props.replaceHostHeader}`;
         includeBody: true,
       },
     ];
+  }
+
+  /**
+   * Hash the stack name to make the EdgeFunction parameter name unique
+   *
+   * @param stack
+   * @returns
+   */
+  private hashStackName(): string {
+    return crypto.createHash('sha1').update(Stack.of(this).stackName).digest('hex').substring(0, 8);
   }
 }
