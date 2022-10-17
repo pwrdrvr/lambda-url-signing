@@ -1,14 +1,14 @@
 {
-  "name": "@huntharo/lambda-signing-url-cli",
+  "name": "@pwrdrvr/lambda-url-signing-cli",
   "description": "Demo of signing lambda URL HTTP requests with SignatureV4",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
   "repository": {
-    "url": "https://github.com/huntharo/lambda-url-signing.git"
+    "url": "https://github.com/pwrdrvr/lambda-url-signing.git"
   },
   "bin": {
-    "lambda-sign-url": "./src/index.ts"
+    "aws-sign-url": "./src/index.ts"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.77",

@@ -1,75 +1,51 @@
 #!/usr/bin/env ts-node
 /* eslint-disable no-console */
 import { Command } from 'commander';
-import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import { SignatureV4 } from '@aws-sdk/signature-v4';
-import { Sha256 } from '@aws-crypto/sha256-browser';
-import { HttpRequest } from '@aws-sdk/protocol-http';
-import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
-import getStream from 'get-stream';
+import { convertRequest } from './convert/request';
+import { getRegionFromHostname } from './convert/region';
+import { signRequest } from './sign';
+import { sendRequest } from './send';
+import { getServiceFromHostname } from './convert/service';
 
 const log = console;
 
-const credentialsProvider = defaultProvider();
+const program = new Command();
 
-/**
- * Sign/presign and send the requests
- * @param url
- */
-async function sendSignedRequest(url: URL, service: string) {
-  const hostname = url.hostname;
+program
+  .name('aws-sign-url')
+  .description(
+    'Sign and invoke a Lambda Function URL or API Gateway Execute-API URL using AWS Signature Version 4',
+  )
+  .version('1.0.0')
+  .option(
+    '-s, --service [service]',
+    'The AWS service to sign the request for (default: determined from URL if it contains execute-api or lambda-url)',
+  )
+  .option(
+    '-r, --region [region]',
+    'The AWS region the endpoint resides in (default: determined from URL)',
+  )
+  .argument('<url>', 'Lambda URL to sign and invoke');
 
-  // Parse the region out of the Lambda URL
-  const region = hostname.split('.')[2];
+program.parse();
 
-  const credentials = await credentialsProvider();
-  const signer = new SignatureV4({
-    credentials,
-    region,
-    service,
-    sha256: Sha256,
-  });
-  // This issue claims that the session token being present during presign causes a problem
-  // Perhaps that is some glitch specific to AWS IOT... it does not appear
-  // to be a problem for AWS Lambda URLs
-  // https://github.com/aws/aws-sdk-js-v3/issues/3417?msclkid=60ca6771c71211ec9f10bd8d6d086432
-  const presigner = new SignatureV4({
-    // credentials: { ...credentials, sessionToken: undefined },
-    credentials,
-    region,
-    service,
-    sha256: Sha256,
-  });
+async function main() {
+  const url = new URL(program.processedArgs[0]);
+  const request = convertRequest(url);
+  const region = program.opts().region ?? getRegionFromHostname(url.hostname);
+  if (region === undefined) {
+    throw new Error(
+      `Could not determine region from hostname: ${url.hostname}, must specify region with --region [region]`,
+    );
+  }
+  const service = program.opts().service ?? getServiceFromHostname(url.hostname);
+  if (service === undefined) {
+    throw new Error(
+      `Could not determine service from hostname: ${url.hostname}, must specify service with --service [service]`,
+    );
+  }
 
-  const request = new HttpRequest({
-    hostname,
-    headers: {
-      host: hostname,
-    },
-    method: 'GET',
-    path: url.pathname,
-    port: 443,
-    protocol: 'https:',
-    // query: {},
-  });
-  url.searchParams.forEach((value, key) => {
-    request.query[key] = value;
-    log.info({ key, value }, 'query');
-  });
-
-  const presignedRequest = (await presigner.presign(request)) as HttpRequest;
-
-  // Workaround needed for this issue with IOT, in combination with the above workaround
-  // Leaving this here for reference
-  // https://github.com/aws/aws-sdk-js-v3/issues/3417?msclkid=60ca6771c71211ec9f10bd8d6d086432
-  // const presignedRequest = (await presigner.presign(request).then((req) => {
-  //   if (typeof credentials.sessionToken === 'string' && typeof req.query === 'object') {
-  //     req.query['X-Amz-Security-Token'] = credentials.sessionToken;
-  //   }
-  //   return req;
-  // })) as HttpRequest;
-
-  const signedRequest = (await signer.sign(request)) as HttpRequest;
+  const { signedRequest, presignedRequest } = await signRequest(request, region, service);
 
   // Send the signed request
   log.info(signedRequest, 'signedRequest');
@@ -80,38 +56,6 @@ async function sendSignedRequest(url: URL, service: string) {
   log.info(presignedRequest, 'presignedRequest');
   log.info('------------------------------------\n');
   await sendRequest(presignedRequest, 'presignedRequest');
-}
-
-/**
- * Send the request to the Lambda URL
- * @param presignedRequest
- */
-async function sendRequest(presignedRequest: HttpRequest, title: string) {
-  log.info(`Sending ${title} request`);
-  const client = new NodeHttpHandler();
-  const { response } = await client.handle(presignedRequest);
-  const responseNoBody = { headers: response.headers, statusCode: response.statusCode };
-  log.info({ responseNoBody }, 'response without body');
-  if (response.body) {
-    log.info({ body: (await getStream(response.body)).slice(0, 2000) }, 'body preview');
-  }
-  log.info('------------------------------------\n');
-}
-
-const program = new Command();
-
-program
-  .name('lambda-sign-url')
-  .description('Sign and invoke a Lambda URL using AWS Signature Version 4')
-  .version('1.0.0')
-  .option('-s, --service [service]', 'The AWS service to use (default: lambda)', 'lambda')
-  .argument('<url>', 'Lambda URL to sign and invoke');
-
-program.parse();
-
-async function main() {
-  const url = new URL(program.processedArgs[0]);
-  await sendSignedRequest(url, program.opts().service);
 }
 
 void main();
