@@ -161,6 +161,20 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       logRetention: logs.RetentionDays.ONE_MONTH,
       runtime: lambda.Runtime.NODEJS_14_X,
       timeout: Duration.seconds(5),
+      initialPolicy: [
+        // Allow the edge function to invoke any lambda tagged as managed
+        ...(useABACPermissions
+          ? [
+              new iam.PolicyStatement({
+                actions: ['lambda:InvokeFunctionUrl'],
+                resources: [`arn:aws:lambda:*:${Aws.ACCOUNT_ID}:*`],
+                conditions: {
+                  StringEquals: { 'aws:ResourceTag/lambda-url-signing': 'true' },
+                },
+              }),
+            ]
+          : []),
+      ],
       ...(removalPolicy ? { removalPolicy } : {}),
     };
     if (
@@ -246,17 +260,6 @@ replaceHostHeader: ${props.replaceHostHeader}`;
           },
         },
         ...edgeToOriginFuncProps,
-      });
-    }
-
-    // Allow the edge function to invoke any lambda tagged as managed
-    if (useABACPermissions) {
-      new iam.PolicyStatement({
-        actions: ['lambda:InvokeFunctionUrl'],
-        resources: [`arn:aws:lambda:*:${Aws.ACCOUNT_ID}:*`],
-        conditions: {
-          StringEquals: { 'aws:ResourceTag/lambda-url-signing': 'true' },
-        },
       });
     }
 
