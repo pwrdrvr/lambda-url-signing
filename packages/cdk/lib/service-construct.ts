@@ -108,6 +108,7 @@ export class ServiceConstruct extends Construct implements IService {
     if (lambdaFuncServiceName !== undefined) {
       Tags.of(this._serviceFunc).add('Name', lambdaFuncServiceName);
     }
+    Tags.of(this._serviceFunc).add('lambda-url-signing', 'true');
     if (removalPolicy) {
       this._serviceFunc.applyRemovalPolicy(removalPolicy);
     }

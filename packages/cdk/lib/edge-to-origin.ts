@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { Aws, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import * as cf from 'aws-cdk-lib/aws-cloudfront';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -41,6 +42,13 @@ export interface EdgeToOriginProps {
    * Origin lambda URL
    */
   readonly lambdaOriginFuncUrl: lambda.IFunctionUrl;
+
+  /**
+   * Use an ABAC policy to allow access to the tagged origin lambda
+   *
+   * @default false
+   */
+  readonly useABACPermissions?: boolean;
 
   /**
    * Adds an X-Forwarded-Host-Header when calling API Gateway
@@ -129,11 +137,12 @@ replaceHostHeader: ${props.replaceHostHeader}`;
     }
 
     const {
-      removalPolicy,
-      signingMode = 'sign',
       addXForwardedHostHeader = true,
-      replaceHostHeader = true,
       originRegion,
+      removalPolicy,
+      replaceHostHeader = true,
+      signingMode = 'sign',
+      useABACPermissions = false,
     } = props;
 
     // Create the edge function config file from the construct options
@@ -240,18 +249,19 @@ replaceHostHeader: ${props.replaceHostHeader}`;
       });
     }
 
-    // Allow Lambda @ Edge to invoke this function
-    // 2021-03-19 - For some reason this was recently removed from the defaults
-    // for a Lambda function and now has to be allowed explicitly
-    // const edgeLambdaPolicy = new iam.PolicyStatement();
-    // edgeLambdaPolicy.addActions('sts:AssumeRole');
-    // edgeLambdaPolicy.addServicePrincipal('edgelambda.amazonaws.com');
-    // (this._edgeToOriginFunction.role as unknown as iam.Role).assumeRolePolicy?.addStatements(
-    //   edgeLambdaPolicy,
-    // );
+    // Allow the edge function to invoke any lambda tagged as managed
+    if (useABACPermissions) {
+      new iam.PolicyStatement({
+        actions: ['lambda:InvokeFunctionUrl'],
+        resources: [`arn:aws:lambda:*:${Aws.ACCOUNT_ID}:*`],
+        conditions: {
+          StringEquals: { 'aws:ResourceTag/lambda-url-signing': 'true' },
+        },
+      });
+    }
 
     // Allow the Lambda to invoke the origin function via URL
-    if (props.lambdaOriginFuncUrl) {
+    if (props.lambdaOriginFuncUrl && !useABACPermissions) {
       props.lambdaOriginFuncUrl.grantInvokeUrl(this._edgeToOriginFunction);
     }
     // if (props.httpApiRoute) {

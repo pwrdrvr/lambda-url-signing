@@ -20,6 +20,7 @@ new AppStack(app, 'lambda-url-signing', {
   env,
   local: {
     removalPolicy: RemovalPolicy.DESTROY,
+    useABACPermissions: true,
   },
   stackName,
 });

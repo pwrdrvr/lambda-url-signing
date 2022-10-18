@@ -7,6 +7,8 @@ import { EdgeToOriginConstruct } from './edge-to-origin';
 interface AppProps extends StackProps {
   readonly local: {
     readonly removalPolicy: RemovalPolicy;
+
+    readonly useABACPermissions?: boolean;
   };
 }
 
@@ -33,7 +35,7 @@ export class AppStack extends Stack implements IAppStack {
   constructor(scope: Construct, id: string, props: AppProps) {
     super(scope, id, props);
 
-    const { removalPolicy } = props.local;
+    const { removalPolicy, useABACPermissions } = props.local;
 
     //
     // Create an origin lambda
@@ -54,6 +56,7 @@ export class AppStack extends Stack implements IAppStack {
       addXForwardedHostHeader: true,
       replaceHostHeader: true,
       removalPolicy,
+      useABACPermissions,
     });
 
     //
