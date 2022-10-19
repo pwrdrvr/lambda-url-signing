@@ -72,5 +72,9 @@ export class AppStack extends Stack implements IAppStack {
       value: this._service.serviceFuncUrl.url,
       exportName: `${this.stackName}-service-url`,
     });
+    new CfnOutput(this, 'edge-domain-name', {
+      value: this._distribution.cloudFrontDistro.domainName,
+      exportName: `${this.stackName}-edge-domain-name`,
+    });
   }
 }
