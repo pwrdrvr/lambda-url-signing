@@ -118,8 +118,8 @@ jobs:
       - name: Get CDK Exports
         id: getCDKExports
         run: |
-          echo "::set-output name=edgeDomain::"$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing-${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text)
-          echo "EDGE_DOMAIN="$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing-${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text) >> $GITHUB_ENV
+          echo "::set-output name=edgeDomain::"$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text)
+          echo "EDGE_DOMAIN="$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text) >> $GITHUB_ENV
 
       - name: Test Demo App
         run: |
