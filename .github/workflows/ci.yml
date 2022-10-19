@@ -74,7 +74,7 @@ jobs:
       - build
     environment:
       name: ghpublic
-      url: https://${{ steps.getCDKExports.outputs.edgeDomain }}${{ steps.getCDKExports.outputs.prefix }}/${{ env.RELEASE_APP_NAME }}/
+      url: https://${{ steps.getCDKExports.outputs.edgeDomain }}${{ steps.getCDKExports.outputs.prefix }}/
     permissions:
       contents: read
       id-token: write
@@ -121,11 +121,7 @@ jobs:
           echo "::set-output name=edgeDomain::"$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing-ghpublic-${NODE_ENV}${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text)
           echo "EDGE_DOMAIN="$(aws cloudformation list-exports --query "Exports[?Name==\`lambda-url-signing-ghpublic-${NODE_ENV}${{ needs.build.outputs.prSuffix }}-edge-domain-name\`].Value" --no-paginate --output text) >> $GITHUB_ENV
 
-      # - name: Test Demo App
-      #   run: |
-      #     echo Testing App Frame Loading
-      #     curl --fail https://${EDGE_DOMAIN}/${DEMO_APP_NAME}/
-      #     echo Testing App HTML Loading
-      #     curl --fail https://${EDGE_DOMAIN}/${DEMO_APP_NAME}/${PACKAGE_VERSION}/index.html
-      #     echo Testing App Method Invocation
-      #     curl --fail https://${EDGE_DOMAIN}/${DEMO_APP_NAME}/${PACKAGE_VERSION}/someMethod
+      - name: Test Demo App
+        run: |
+          echo Testing Edge Request with Auth
+          curl --fail https://${EDGE_DOMAIN}/
